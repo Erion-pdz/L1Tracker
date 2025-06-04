@@ -59,6 +59,7 @@ L1Tracker/
 │   ├── classement.js               # Classement actuel de la Ligue 1
 │   ├── favoris.js                  # Équipes/joueurs favoris
 │   └── _layout.js                  # Layout principal (nav commune, header, etc.)
+│   └── login.js                    # Page de connexion
 │
 ├── components/                     # Composants réutilisables
 │   ├── MatchCard.js                # Carte affichant un match (score, équipes)
@@ -69,6 +70,7 @@ L1Tracker/
 │
 ├── services/                       # Appels API
 │   └── api.js                      # Fichier avec les fonctions Axios (fixtures, stats, etc.)
+
 │
 ├── constants/                      # Fichiers de config ou constantes globales
 │   └── colors.js                   # Palette de couleurs

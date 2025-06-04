@@ -7,7 +7,16 @@ import { getTeamById } from '../services/api';
 export default function Favoris() {
   const [favoriteTeams, setFavoriteTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      setIsAuthenticated(!!token);
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -24,8 +33,28 @@ export default function Favoris() {
       }
     };
 
-    loadFavorites();
-  }, []);
+    if (isAuthenticated) {
+      loadFavorites();
+    }
+  }, [isAuthenticated]);
+
+  if (isAuthenticated === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 16, textAlign: 'center' }}>
+          Pour accéder à cette fonctionnalité, veuillez vous connecter.
+        </Text>
+      </View>
+    );
+  }
 
   if (loading) {
     return (

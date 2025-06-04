@@ -22,15 +22,52 @@ export const getMatchEvents = async (fixtureId) => {
   return response.data.response;
 };
 
-export const getFixturesByDate = async (date) => {
-  const response = await api.get(`/fixtures?league=61&season=2024&date=${date}`);
-  return response.data.response;
+export const getFixturesByDate = async (date = '2024-05-19', leagueId = 61) => {
+  try {
+    const response = await api.get('/fixtures', {
+      params: {
+        date,
+        league: leagueId,
+        season: 2023,
+      },
+    });
+
+    return response.data.response;
+  } catch (error) {
+    console.error('Erreur API getFixturesByDate:', error);
+    return [];
+  }
 };
 
 export const getLeagueStandings = async () => {
-  const response = await api.get('/standings?league=61&season=2024');
-  return response.data.response[0].league.standings[0]; // liste des équipes
+  try {
+    const response = await api.get('/standings', {
+      params: {
+        league: 61,
+        season: 2024,
+      },
+    });
+
+    const standingsData = response.data.response;
+
+    if (
+      standingsData &&
+      standingsData.length > 0 &&
+      standingsData[0].league &&
+      standingsData[0].league.standings &&
+      standingsData[0].league.standings.length > 0
+    ) {
+      return standingsData[0].league.standings[0];
+    } else {
+      console.warn('Données de classement manquantes ou invalides');
+      return [];
+    }
+  } catch (error) {
+    console.error('Erreur API getLeagueStandings:', error);
+    return [];
+  }
 };
+
 
 export const getTeamById = async (id) => {
   const response = await api.get(`/teams?id=${id}`);

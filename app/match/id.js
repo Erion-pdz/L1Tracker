@@ -1,14 +1,24 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, View } from 'react-native';
 import { getLineUps, getMatchEvents, getMatchStats } from '../../services/api';
 
 export default function MatchDetail() {
-  const { id } = useLocalSearchParams(); // Récupère l’ID du match depuis l’URL
+  const { id } = useLocalSearchParams(); 
   const [stats, setStats] = useState([]);
   const [lineups, setLineups] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      setIsAuthenticated(!!token);
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
@@ -29,8 +39,28 @@ export default function MatchDetail() {
       }
     };
 
-    fetchMatchDetails();
-  }, [id]);
+    if (isAuthenticated) {
+      fetchMatchDetails();
+    }
+  }, [id, isAuthenticated]);
+
+  if (isAuthenticated === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 16, textAlign: 'center' }}>
+          Pour accéder à cette fonctionnalité, veuillez vous connecter.
+        </Text>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
