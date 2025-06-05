@@ -3,6 +3,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signUp, signIn } from '../services/auth'; 
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 const LoginScreen = () => {
   const router = useRouter();
@@ -21,7 +23,18 @@ const LoginScreen = () => {
       const token = await user.getIdToken();
       await AsyncStorage.setItem('authToken', token);
 
-      router.replace('/');
+      // 🔍 Récupération du rôle via Firestore
+      const db = getFirestore();
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const role = userDoc.exists() ? userDoc.data().role : null;
+
+      if (role === 'admin') {
+        await AsyncStorage.setItem('userRole', 'admin');
+        router.replace('/admin/adm');
+      } else {
+        await AsyncStorage.setItem('userRole', role || 'user');
+        router.replace('/');
+      }
     } catch (err) {
       console.error('Firebase Auth error:', err);
       switch (err.code) {

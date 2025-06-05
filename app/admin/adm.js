@@ -4,7 +4,10 @@ import { useRouter } from 'expo-router';
 import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getUserDocument } from '../../firebase/firestore';
-import { getAllUsers, deleteUserById, updateUserRole } from '../../services/admin'; // à créer
+import { getAllUsers, deleteUserById, updateUserRole } from '../../services/admin'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Link } from 'expo-router';
+
 
 const AdminPage = () => {
   const router = useRouter();
@@ -12,27 +15,45 @@ const AdminPage = () => {
   const [userRole, setUserRole] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) return router.replace('/login');
+  AsyncStorage.getItem('userRole').then(setRole);
+}, []);
 
-      setUser(currentUser);
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    if (!currentUser) {
+      router.replace('/login');
+      setLoading(false);
+      return;
+    }
+
+    setUser(currentUser);
+
+    try {
       const data = await getUserDocument(currentUser.uid);
       setUserRole(data?.role);
 
       if (data?.role === 'admin') {
         const allUsers = await getAllUsers();
         setUsers(allUsers);
-        setLoading(false);
       } else {
         Alert.alert('Accès refusé', "Vous n'avez pas les droits admin.");
         router.replace('/');
       }
-    });
+    } catch (error) {
+      console.error('❌ Erreur récupération utilisateur :', error);
+      Alert.alert('Erreur', 'Impossible de récupérer les données utilisateur.');
+      router.replace('/');
+    } finally {
+      setLoading(false); 
+    }
+  });
 
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
+
 
   const handleDelete = async (uid) => {
     await deleteUserById(uid);
@@ -45,7 +66,14 @@ const AdminPage = () => {
     setUsers(users.map((u) => (u.id === uid ? { ...u, role: newRole } : u)));
   };
 
-  if (loading) return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
+if (loading) {
+  return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
+}
+
+if (!loading && userRole !== 'admin') {
+  return <Text style={{ padding: 20 }}>Accès refusé</Text>;
+}
+
 
   return (
     <View style={styles.container}>
@@ -64,8 +92,8 @@ const AdminPage = () => {
         )}
       />
       <View style={{ marginTop: 40 }}>
-        <Text style={styles.subtitle}>Zone de gestion du contenu</Text>
-        <Text>(à compléter selon ce que tu veux gérer ici)</Text>
+        <Text style={styles.subtitle}>Gestion des utilisateurs</Text>
+        <Text></Text>
       </View>
     </View>
   );

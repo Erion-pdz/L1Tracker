@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, View } from 'react-native';
 import { getLeagueStandings } from '../services/api';
 
+
 export default function Classement() {
   const [standings, setStandings] = useState([]);
   const [loading, setLoading] = useState(true);
