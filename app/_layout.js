@@ -42,13 +42,13 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="match/id"
-        options={{
-          title: 'Stats équipes',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart-outline" size={size} color={color} />
-          ),
-        }}
+        //name="match/id"
+        //options={{
+          //title: 'Stats équipes',
+          //tabBarIcon: ({ color, size }) => (
+            //<Ionicons name="stats-chart-outline" size={size} color={color} />
+          //),
+        //}}
      />
       <Tabs.Screen
         name="favoris"
