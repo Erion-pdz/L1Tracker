@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { getTeamById } from '../services/api';
+import { getTeamById } from '../../services/api';
 
 export default function Favoris() {
   const [favoriteTeams, setFavoriteTeams] = useState([]);

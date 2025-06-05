@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { getLiveMatches, getTodayMatches } from '../services/api';
+import { getLiveMatches, getTodayMatches } from '../../services/api';
 
 export default function HomeScreen() {
   const [todayMatches, setTodayMatches] = useState([]);

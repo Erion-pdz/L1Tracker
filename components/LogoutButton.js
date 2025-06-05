@@ -1,57 +1,29 @@
-// components/LogoutButton.js
 import { useEffect, useState } from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { Button } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../firebase/firebase';
 
-const LogoutButton = () => {
+export default function LogoutButton() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsLoggedIn(!!user);
-    });
-    return unsubscribe;
+    const checkToken = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      setVisible(!!token);
+    };
+
+    checkToken();
+    const interval = setInterval(checkToken, 2000); // vérifie régulièrement si on est connecté
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
     await AsyncStorage.clear();
     router.replace('/login');
   };
 
-  if (!isLoggedIn) return null;
+  if (!visible) return null;
 
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={handleLogout} style={styles.button}>
-        <Text style={styles.text}>Déconnexion</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 100,
-  },
-  button: {
-    marginRight: 15,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    backgroundColor: '#ff3b30',
-    borderRadius: 6,
-  },
-  text: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-});
-
-export default LogoutButton;
+  return <Button title="Déconnexion" onPress={handleLogout} />;
+}

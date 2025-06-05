@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addDays, format, subDays } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
-import MatchCard from '../components/MatchCard';
-import { getFixturesByDate } from '../services/api';
+import MatchCard from '../../components/MatchCard';
+import { getFixturesByDate } from '../../services/api';
 
 const Calendrier = () => {
   const [currentDate, setCurrentDate] = useState(new Date());

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, View } from 'react-native';
-import { getLeagueStandings } from '../services/api';
+import { getLeagueStandings } from '../../services/api';
 
 
 export default function Classement() {

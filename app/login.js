@@ -2,16 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { signUp, signIn } from '../services/auth'; 
+import { signIn, signUp } from '../services/firebaseAuth';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
 
-const LoginScreen = () => {
+export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoginMode, setIsLoginMode] = useState(true);
   const [error, setError] = useState('');
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const handleAuth = async () => {
     setError('');
@@ -23,20 +22,21 @@ const LoginScreen = () => {
       const token = await user.getIdToken();
       await AsyncStorage.setItem('authToken', token);
 
-      // 🔍 Récupération du rôle via Firestore
       const db = getFirestore();
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const role = userDoc.exists() ? userDoc.data().role : null;
+      const role = userDoc.exists() ? userDoc.data().role : 'user';
+
+      await AsyncStorage.setItem('userRole', role);
 
       if (role === 'admin') {
-        await AsyncStorage.setItem('userRole', 'admin');
-        router.replace('/admin/adm');
+        router.replace('/admin');
+
       } else {
-        await AsyncStorage.setItem('userRole', role || 'user');
-        router.replace('/');
+        router.replace('/(tabs)');
       }
+
     } catch (err) {
-      console.error('Firebase Auth error:', err);
+      console.error('Erreur Firebase :', err.code);
       switch (err.code) {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
@@ -54,7 +54,6 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{isLoginMode ? 'Connexion' : 'Inscription'}</Text>
-
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <TextInput
@@ -87,7 +86,7 @@ const LoginScreen = () => {
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20 },
@@ -101,5 +100,3 @@ const styles = StyleSheet.create({
   },
   error: { color: 'red', marginBottom: 10, textAlign: 'center' },
 });
-
-export default LoginScreen;

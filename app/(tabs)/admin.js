@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Button, FlatList, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { auth } from '../../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../firebase/firebase';
 import { getUserDocument } from '../../firebase/firestore';
-import { getAllUsers, deleteUserById, updateUserRole } from '../../services/admin'; 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Link } from 'expo-router';
-
+import { getAllUsers, deleteUserById, updateUserRole } from '../../services/admin';
 
 const AdminPage = () => {
   const router = useRouter();
@@ -15,45 +12,39 @@ const AdminPage = () => {
   const [userRole, setUserRole] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState(null);
 
   useEffect(() => {
-  AsyncStorage.getItem('userRole').then(setRole);
-}, []);
-
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    if (!currentUser) {
-      router.replace('/login');
-      setLoading(false);
-      return;
-    }
-
-    setUser(currentUser);
-
-    try {
-      const data = await getUserDocument(currentUser.uid);
-      setUserRole(data?.role);
-
-      if (data?.role === 'admin') {
-        const allUsers = await getAllUsers();
-        setUsers(allUsers);
-      } else {
-        Alert.alert('Accès refusé', "Vous n'avez pas les droits admin.");
-        router.replace('/');
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        router.replace('/connexion');
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error('❌ Erreur récupération utilisateur :', error);
-      Alert.alert('Erreur', 'Impossible de récupérer les données utilisateur.');
-      router.replace('/');
-    } finally {
-      setLoading(false); 
-    }
-  });
 
-  return () => unsubscribe();
-}, []);
+      setUser(currentUser);
 
+      try {
+        const data = await getUserDocument(currentUser.uid);
+        setUserRole(data?.role);
+
+        if (data?.role === 'admin') {
+          const allUsers = await getAllUsers();
+          setUsers(allUsers);
+        } else {
+          Alert.alert('Accès refusé', "Vous n'avez pas les droits admin.");
+          router.replace('/(tabs)');
+        }
+      } catch (error) {
+        console.error('❌ Erreur récupération utilisateur :', error);
+        Alert.alert('Erreur', 'Impossible de récupérer les données utilisateur.');
+        router.replace('/(tabs)');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleDelete = async (uid) => {
     await deleteUserById(uid);
@@ -66,14 +57,13 @@ useEffect(() => {
     setUsers(users.map((u) => (u.id === uid ? { ...u, role: newRole } : u)));
   };
 
-if (loading) {
-  return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
-}
+  if (loading) {
+    return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
+  }
 
-if (!loading && userRole !== 'admin') {
-  return <Text style={{ padding: 20 }}>Accès refusé</Text>;
-}
-
+  if (userRole !== 'admin') {
+    return <Text style={{ padding: 20 }}>Accès refusé</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -91,18 +81,13 @@ if (!loading && userRole !== 'admin') {
           </View>
         )}
       />
-      <View style={{ marginTop: 40 }}>
-        <Text style={styles.subtitle}>Gestion des utilisateurs</Text>
-        <Text></Text>
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  subtitle: { fontSize: 18, fontWeight: 'bold', marginTop: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   userRow: {
     paddingVertical: 10,
     borderBottomWidth: 1,
